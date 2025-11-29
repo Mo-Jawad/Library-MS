@@ -27,6 +27,8 @@ router.route('/signup').post(async (req, res) => {
         role
     })
 
+    await createUser.save()
+
     return res.status(200).json({
         user: createUser
     })
@@ -46,10 +48,41 @@ router.route('/login').get((req, res) => {
     })
 })
 
-router.route('/login').post((req, res) => {
-    res.status(200).json({
-        message: 'you have to login first.'
+router.route('/login').post(async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+    if(!email || !password) {
+         return res.status(404).json({
+            message: 'fill All the fields'
+        })
+    }
+
+    const theUser = await userModel.findOne({ email });
+
+    if(!theUser) {
+
+        return res.status(404).json({
+        message: 'something went wrong!'
     })
+    }
+
+    if(theUser.password !== password) {
+        return res.status(404).json({
+        message: 'something went wrong!'
+    })
+    }
+
+    return res.status(200).json({
+        message: 'you loggedin successfully',
+        user: theUser
+    })
+    } catch (error) {
+        return res.status(500).json({
+        message: 'something went wrong'
+    })
+    }
+    
 })
 
 export default router
