@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {userModel} from '../models/user.models.js'
+import bcrypt from 'bcrypt'
 
 const router = Router()
 
@@ -20,18 +21,24 @@ router.route('/signup').post(async (req, res) => {
         })
     }
 
-    const createUser = await userModel.create({
+    bcrypt.hash(password, 10, async function(err, hash) {
+        const createUser = await userModel.create({
         name,
         email,
-        password,
+        password: hash,
         role
     })
 
-    await createUser.save()
+        await createUser.save()
 
-    return res.status(200).json({
+        return res.status(200).json({
         user: createUser
     })
+    });
+
+    
+
+    
     } catch (error) {
          return res.status(500).json({
             message: 'Internal server error',
@@ -67,16 +74,22 @@ router.route('/login').post(async (req, res) => {
     })
     }
 
-    if(theUser.password !== password) {
-        return res.status(404).json({
-        message: 'something went wrong!'
-    })
-    }
+    // check and compare this password true or false
 
-    return res.status(200).json({
+    const matchPass = await bcrypt.compare(password, theUser.password);
+
+    if(matchPass) {
+        return res.status(200).json({
         message: 'you loggedin successfully',
         user: theUser
     })
+    } else {
+        return res.status(200).json({
+        message: 'something went wrong',
+        user: theUser
+    })
+    }
+
     } catch (error) {
         return res.status(500).json({
         message: 'something went wrong'
