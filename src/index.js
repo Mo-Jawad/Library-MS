@@ -2,6 +2,7 @@ import express from 'express'
 import env from 'dotenv'
 import { connection } from './db/connection.js'
 import authRoute from './routes/auth.routes.js'
+import bookRoute from './routes/book.routes.js'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import path from 'path'
@@ -12,7 +13,6 @@ env.config({
 })
 connection()
 
-app.set('view engine', 'ejs')
 app.use(cookieParser())
 app.use(session({ 
     secret: process.env.SECRET_KEY, 
@@ -30,6 +30,7 @@ const port = process.env.PORT || 3000
 
 
 app.use('/', authRoute)
+app.use('/book', bookRoute)
 
 app.listen(port)
 
