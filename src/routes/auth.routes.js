@@ -9,6 +9,7 @@ dotenv.config({
 })
 const router = Router()
 
+
 router.route('/').get((req, res) => {
     res.status(200).json({
         'message': 'bye bye babe'
@@ -116,5 +117,9 @@ router.route('/login').post(async (req, res) => {
     }
     
 })
+
+
+
+
 
 export default router

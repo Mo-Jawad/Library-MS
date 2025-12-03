@@ -1,12 +1,12 @@
 import { Router } from "express";
 import booksModel from '../models/book.models.js'
-import authorizeRole from "../middleware/authrole.js";
+import authorizeRole, { verifyLogin } from "../middleware/authrole.js";
 
 const router = Router()
 
 
 // fetch all books
-router.route('/all-books').get(async (req, res) => {
+router.route('/all-books').get(verifyLogin,async (req, res) => {
     const allBooks = await booksModel.find()
 
     if(!allBooks) {
@@ -47,7 +47,7 @@ router.route('/:name').get(async (req, res) => {
 
 // Adding a book after checking "ADMIN" as a role
 
-router.route('/add-book').post(authorizeRole('admin'),async (req, res) => {
+router.route('/add-book').post(verifyLogin,authorizeRole('admin'),async (req, res) => {
     const { title, author, publishedYear, genre, availableCopies } = req.body
 
     if (!title || !author || !publishedYear || !genre || !availableCopies) {
