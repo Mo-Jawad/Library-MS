@@ -1,6 +1,7 @@
 import { Router } from "express";
 import booksModel from '../models/book.models.js'
 import authorizeRole, { verifyLogin } from "../middleware/authrole.js";
+import { userModel } from "../models/user.models.js";
 
 const router = Router()
 
@@ -78,6 +79,42 @@ router.route('/add-book').post(verifyLogin,authorizeRole('admin'),async (req, re
             book: addBook
         })
     }
+})
+
+// borrowing a book after verifying login and USER role!
+router.route('/borrow/:id').post(verifyLogin, authorizeRole('user'), async (req, res) => {
+    const { id } = req.params;
+
+    const theBook = await booksModel.findById(id);
+
+    const LoggedinUser = await userModel.findById(req.user.id)
+
+    if(!theBook || !LoggedinUser) {
+        return res.status(404).json({
+            message: "something went wrong"
+        })
+    }
+    try {
+        theBook.borrowedUser.push(LoggedinUser._id);
+        theBook.availableCopies--;
+        await theBook.save()
+
+        LoggedinUser.borrowedBooks.push(theBook._id)
+        await LoggedinUser.save()
+
+        res.status(200).json({
+            message: "borrowed successfully",
+            user: LoggedinUser,
+            book: theBook
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
+    
+
+
 })
 
 export default router 
